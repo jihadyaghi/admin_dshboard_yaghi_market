@@ -14,6 +14,7 @@ const [categories, setCategories] = useState([]);
 const [products, setProducts] = useState([]);
 const [message, setMessage] = useState("");
 const [loadingProducts, setLoadingProducts] = useState(false);
+const [uploading, setUploading] = useState(false);
 const loadCategories = async (sec = "supermarket")=>{
     try{
         const res = await fetch (`${API}/api/categories?section=${sec}`);
@@ -97,6 +98,12 @@ const addProduct = async (e) => {
     e.preventDefault();
     setMessage("");
     try {
+        console.log({
+            name,
+            price,
+            image,
+            section
+        })
         const res = await fetch(`${API}/api/products`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -201,7 +208,22 @@ return(
                     <input type="file"
                            accept="image/*"
                            onChange={async (e)=>{
-    
+                            const file = e.target.files?.[0];
+                            if(!file) return;
+                            setMessage("");
+                            setUploading(true);
+                            try {
+                                const filename = await uploadImage(file);
+                                setImage(filename);
+                                setMessage("Image uploaded");
+                            }
+                            catch (err){
+                                console.log(err);
+                                setMessage(err.message || "Image upload failed");
+                            }
+                            finally {
+                                setUploading(false);
+                            }
                            }}
                            className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200"/>
                     <label className="block mt-4 text-sm font-semibold text-gray-700">Description</label>
